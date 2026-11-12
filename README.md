@@ -156,15 +156,19 @@ Além disso, a consulta do relatório soma `Pedidos.ValorTotal`, gravado pelo ba
 
 ## Bloco 9 — Testes unitários do serviço de pedidos
 
-Os testes de `PedidoCreationService` cobrem cliente inexistente, pedido sem itens, quantidade zero ou negativa, produto inexistente, estoque insuficiente com rollback, cálculo do total usando o preço do banco, produto repetido e baixa correta do estoque. Eles usam SQLite em memória para exercitar as transações e `ExecuteUpdateAsync` do EF Core sem depender do SQL Server ou de mocks.
+Os testes unitários de `PedidoCreationService` cobrem cliente inexistente, pedido sem itens, quantidade zero ou negativa, produto inexistente, estoque insuficiente com rollback, cálculo do total usando o preço do banco, produto repetido e baixa correta do estoque. Eles usam SQLite em memória para exercitar as transações e `ExecuteUpdateAsync` do EF Core sem depender do SQL Server ou de mocks.
 
-Para executar os testes dentro do container com o SDK .NET, na raiz do repositório, rode:
+## Bloco 10 — Testes de integração com SQL Server
+
+Os testes de integração usam `WebApplicationFactory` para chamar a API real e Testcontainers para iniciar um SQL Server descartável. Eles verificam criação e baixa de estoque, respostas `400`/`404`/`409`, rollback quando um item falha, filtros e paginação de pedidos, além do limite de cinco clientes, ordem decrescente e período inclusivo do relatório. Ao terminar a fixture, o container temporário é removido.
+
+Para executar todos os testes dentro do container com SDK .NET, na raiz do repositório, rode:
 
 ```powershell
 docker compose --profile test run --build --rm backend-tests
 ```
 
-O serviço `backend-tests` fica no perfil `test`, portanto não é iniciado pelo `docker compose up` normal. O teste não sobe o SQL Server nem altera os dados do volume da aplicação.
+O serviço `backend-tests` fica no perfil `test`, portanto não é iniciado pelo `docker compose up` normal. Ele precisa do Docker ativo e monta o socket do Docker Desktop para que o Testcontainers consiga iniciar e remover seu SQL Server isolado. Os testes não alteram o banco nem o volume usados pela aplicação.
 
 ## O que já está implementado
 

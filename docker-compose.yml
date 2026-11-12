@@ -77,6 +77,10 @@ services:
       context: ./backend
       dockerfile: Dockerfile
       target: test
+    environment:
+      TESTCONTAINERS_HOST_OVERRIDE: host.docker.internal
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     profiles:
       - test
 
