@@ -67,9 +67,12 @@ Backend (ajustar à solução criada):
 
 ```bash
 docker compose build backend
+docker compose --profile test run --build --rm backend-tests
 ```
 
-O SDK .NET não precisa estar instalado no host: o build roda no estágio SDK do `backend/Dockerfile`. Para executar testes, use o projeto de testes no container/compose quando ele estiver criado.
+O SDK .NET não precisa estar instalado no host: o build roda no estágio SDK do
+`backend/Dockerfile`. Os testes unitários também rodam no container SDK e usam
+SQLite em memória, sem iniciar o SQL Server.
 
 Integração final:
 

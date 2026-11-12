@@ -72,6 +72,14 @@ services:
       database-init:
         condition: service_completed_successfully
 
+  backend-tests:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: test
+    profiles:
+      - test
+
   frontend:
     build:
       context: ./frontend

@@ -154,6 +154,18 @@ Correções aplicadas: o `WHERE YEAR(p.DataPedido) = 2026` tornava o filtro não
 
 Além disso, a consulta do relatório soma `Pedidos.ValorTotal`, gravado pelo backend na mesma transação que os itens, evitando a junção e leitura de `ItensPedido`. Os totais do benchmark são gerados a partir dos mesmos preços e quantidades dos itens. Os tempos variam conforme cache e ambiente; nesta execução as leituras físicas foram zero, então use os números como evidência local, não como garantia de produção.
 
+## Bloco 9 — Testes unitários do serviço de pedidos
+
+Os testes de `PedidoCreationService` cobrem cliente inexistente, pedido sem itens, quantidade zero ou negativa, produto inexistente, estoque insuficiente com rollback, cálculo do total usando o preço do banco, produto repetido e baixa correta do estoque. Eles usam SQLite em memória para exercitar as transações e `ExecuteUpdateAsync` do EF Core sem depender do SQL Server ou de mocks.
+
+Para executar os testes dentro do container com o SDK .NET, na raiz do repositório, rode:
+
+```powershell
+docker compose --profile test run --build --rm backend-tests
+```
+
+O serviço `backend-tests` fica no perfil `test`, portanto não é iniciado pelo `docker compose up` normal. O teste não sobe o SQL Server nem altera os dados do volume da aplicação.
+
 ## O que já está implementado
 
 - Tela de listagem de pedidos com filtro por cliente e período.
