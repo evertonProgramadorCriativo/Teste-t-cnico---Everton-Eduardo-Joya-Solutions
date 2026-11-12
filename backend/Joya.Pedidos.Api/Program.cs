@@ -13,7 +13,19 @@ app.MapGet("/health", async (CancellationToken cancellationToken, ILogger<Progra
         await using var connection = new SqlConnection(connectionString);
         await connection.OpenAsync(cancellationToken);
 
-        return Results.Ok(new { status = "ok", banco = "conectado" });
+        await using var command = new SqlCommand(
+            "SELECT (SELECT COUNT(*) FROM dbo.Clientes), (SELECT COUNT(*) FROM dbo.Produtos);",
+            connection);
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        await reader.ReadAsync(cancellationToken);
+
+        return Results.Ok(new
+        {
+            status = "ok",
+            banco = "conectado",
+            clientes = reader.GetInt32(0),
+            produtos = reader.GetInt32(1)
+        });
     }
     catch (SqlException exception)
     {

@@ -16,10 +16,10 @@ Requisitos: Docker Desktop com Docker Compose.
 3. Verifique a API em `http://localhost:8080/health`. Quando o SQL Server estiver acessível, a resposta será:
 
    ```json
-   { "status": "ok", "banco": "conectado" }
+   { "status": "ok", "banco": "conectado", "clientes": 3, "produtos": 4 }
    ```
 
-O health endpoint abre uma conexão real com o SQL Server. Nesta etapa inicial ele usa o banco de sistema `master`; a criação e a configuração do banco da aplicação ficam para a etapa de banco de dados. O SQL Server persiste dados no volume `sqlserver-data` e fica disponível na porta `1433`.
+O Compose aguarda o SQL Server ficar saudável, executa `database/01-schema.sql` e `database/02-seed.sql` em um serviço de inicialização e só então inicia a API. Os scripts são idempotentes e podem ser executados novamente sem duplicar os dados de exemplo. O health endpoint abre uma conexão real com o banco `JoyaPedidos` e retorna as contagens atuais de clientes e produtos. O SQL Server persiste dados no volume `sqlserver-data` e fica disponível na porta `1433`.
 
 ## O que já está implementado
 

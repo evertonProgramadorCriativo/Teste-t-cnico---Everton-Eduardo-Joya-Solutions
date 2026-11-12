@@ -93,7 +93,7 @@ Todos os JSON usam camelCase. Datas de filtro no formato `YYYY-MM-DD`. Erros seg
 | `GET /relatorios/top-clientes` | Top 5 por valor total no período (`dataInicio` e `dataFim` obrigatórios). | 200 lista de até 5 itens |
 | `GET /clientes` | Apoio ao formulário. | 200 `[{ id, nome }]` |
 | `GET /produtos` | Apoio ao formulário (preço e estoque atuais). | 200 `[{ id, nome, precoUnitario, estoqueDisponivel }]` |
-| `GET /health` | Verifica API e conexão com o banco. | 200 `{ status, banco }` |
+| `GET /health` | Verifica API e conexão com o banco, incluindo contagem de clientes e produtos. | 200 `{ status, banco, clientes, produtos }` |
 
 ### Códigos de erro
 - **400**: dados inválidos (sem itens, quantidade ≤ 0, `dataInicio` > `dataFim`, página inválida).
@@ -128,6 +128,7 @@ Todos os JSON usam camelCase. Datas de filtro no formato `YYYY-MM-DD`. Erros seg
 | CA-13 | `docker compose up --build` sobe SQL Server (scripts executados), backend e frontend sem ajuste manual. |
 | CA-14 | Testes unitários e de integração (SQL Server real) passam com `dotnet test`. |
 | CA-15 | O README explica decisões, execução, testes, uso do Claude Code e o debug da query. |
+| CA-16 | `GET /health` confirma a conexão e retorna as quantidades de clientes e produtos carregados pelos scripts do banco. |
 
 ## 8. Pontos ainda sujeitos a decisão
 
