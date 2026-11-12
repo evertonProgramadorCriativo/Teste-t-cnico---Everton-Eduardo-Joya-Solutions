@@ -2,6 +2,25 @@
 
 Starter de frontend para o teste técnico Full Stack da Joya Solutions. O projeto foi organizado para entrar em um monorepositório com o backend .NET e o SQL Server.
 
+## Bloco 1 — API e SQL Server no Docker
+
+Requisitos: Docker Desktop com Docker Compose.
+
+1. Copie `.env.example` para `.env` e defina `SQL_SA_PASSWORD` com uma senha local forte que atenda aos requisitos do SQL Server. O arquivo `.env` é ignorado pelo Git.
+2. Na raiz do projeto, execute:
+
+   ```bash
+   docker compose up --build
+   ```
+
+3. Verifique a API em `http://localhost:8080/health`. Quando o SQL Server estiver acessível, a resposta será:
+
+   ```json
+   { "status": "ok", "banco": "conectado" }
+   ```
+
+O health endpoint abre uma conexão real com o SQL Server. Nesta etapa inicial ele usa o banco de sistema `master`; a criação e a configuração do banco da aplicação ficam para a etapa de banco de dados. O SQL Server persiste dados no volume `sqlserver-data` e fica disponível na porta `1433`.
+
 ## O que já está implementado
 
 - Tela de listagem de pedidos com filtro por cliente e período.
