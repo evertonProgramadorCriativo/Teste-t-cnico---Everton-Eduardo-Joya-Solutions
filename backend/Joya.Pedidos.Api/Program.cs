@@ -1,10 +1,26 @@
+using Joya.Pedidos.Api.Data;
+using Joya.Pedidos.Api.Endpoints;
+using Joya.Pedidos.Api.Services;
 using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("A connection string 'DefaultConnection' não foi configurada.");
 
+builder.Services.AddDbContext<PedidosDbContext>(options => options.UseSqlServer(connectionString));
+builder.Services.AddScoped<ILookupService, LookupService>();
+builder.Services.AddProblemDetails();
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+});
+
 var app = builder.Build();
+
+app.UseExceptionHandler();
+app.UseStatusCodePages();
 
 app.MapGet("/health", async (CancellationToken cancellationToken, ILogger<Program> logger) =>
 {
@@ -36,6 +52,9 @@ app.MapGet("/health", async (CancellationToken cancellationToken, ILogger<Progra
             statusCode: StatusCodes.Status503ServiceUnavailable);
     }
 });
+
+app.MapClients();
+app.MapProducts();
 
 app.Run();
 

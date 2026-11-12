@@ -1,0 +1,13 @@
+@baseUrl = http://localhost:8080
+
+### Health check
+GET {{baseUrl}}/health
+
+### Listar clientes
+GET {{baseUrl}}/clientes
+
+### Listar produtos
+GET {{baseUrl}}/produtos
+
+### Rota inexistente — deve retornar 404 ProblemDetails
+GET {{baseUrl}}/rota-inexistente
