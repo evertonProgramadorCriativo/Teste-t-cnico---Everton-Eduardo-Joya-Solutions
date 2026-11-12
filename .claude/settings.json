@@ -9,6 +9,15 @@
             "command": "sh .claude/hooks/typecheck-frontend.sh"
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .claude/hooks/build-backend.ps1"
+          }
+        ]
       }
     ]
   }

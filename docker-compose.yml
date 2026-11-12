@@ -32,6 +32,31 @@ services:
       sqlserver:
         condition: service_healthy
 
+  dbhub:
+    image: bytebase/dbhub:1.6.0
+    command:
+      [
+        "--config",
+        "/config/dbhub.toml",
+        "--transport",
+        "http",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8081"
+      ]
+    environment:
+      DB_PASSWORD: ${SQL_SA_PASSWORD:?Defina SQL_SA_PASSWORD no arquivo .env}
+    ports:
+      - "127.0.0.1:8081:8081"
+    volumes:
+      - ./.claude/dbhub.toml:/config/dbhub.toml:ro
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      database-init:
+        condition: service_completed_successfully
+
   backend:
     build:
       context: ./backend

@@ -25,6 +25,7 @@ Antes de implementar o backend, leia:
 - `backend/`: ASP.NET Core .NET 8 ou superior. Separe responsabilidades de API, aplicação/domínio e persistência de acordo com o tamanho do desafio; evite abstrações desnecessárias.
 - `database/`: scripts idempotentes de criação, índices e carga de dados demonstrativos.
 - `docs/`: especificação, plano, contrato de integração e documentação técnica.
+- `.claude/skills/new-endpoint/`: orientações para criar endpoints coerentes com o contrato e os padrões do backend.
 
 ## Convenções de código
 
@@ -65,10 +66,10 @@ npm run dev
 Backend (ajustar à solução criada):
 
 ```bash
-dotnet restore
-dotnet build
-dotnet test
+docker compose build backend
 ```
+
+O SDK .NET não precisa estar instalado no host: o build roda no estágio SDK do `backend/Dockerfile`. Para executar testes, use o projeto de testes no container/compose quando ele estiver criado.
 
 Integração final:
 
@@ -78,4 +79,6 @@ docker compose up --build
 
 ## Claude Code / MCP
 
-O desafio exige MCP conectado ao SQL Server. Configure o servidor MCP no ambiente local do Claude Code usando credenciais de desenvolvimento fora do Git. Não invente que o MCP foi conectado nem que executou consultas se isso não aconteceu. Documente no README final quais operações foram realmente realizadas pelo MCP.
+O projeto registra o MCP SQL Server em `.mcp.json`, usando DBHub em modo somente leitura no endpoint HTTP local `http://localhost:8081/mcp`. O hook `PostToolUse` executa `docker compose build backend` após alterações em arquivos do backend; o hook de typecheck do frontend continua ativo. As instruções da skill `new-endpoint` ficam em `.claude/skills/new-endpoint/SKILL.md`.
+
+O Compose passa `SQL_SA_PASSWORD` do `.env` local, que não deve ser versionado, ao container DBHub. O MCP só publica a ferramenta SQL em modo somente leitura e a porta fica vinculada a `127.0.0.1`. Aprove o servidor SQL Server quando o Claude Code solicitar e confira o estado com `/mcp` ou `claude mcp list`. Nunca registre que o MCP executou uma consulta sem observar o resultado da ferramenta.

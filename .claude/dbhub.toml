@@ -1,0 +1,16 @@
+[[sources]]
+id = "joya-local"
+type = "sqlserver"
+host = "sqlserver"
+port = 1433
+database = "JoyaPedidos"
+user = "sa"
+password = "${DB_PASSWORD}"
+sslmode = "disable"
+query_timeout = 15
+
+[[tools]]
+name = "execute_sql"
+source = "joya-local"
+readonly = true
+max_rows = 100

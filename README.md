@@ -21,6 +21,17 @@ Requisitos: Docker Desktop com Docker Compose.
 
 O Compose aguarda o SQL Server ficar saudável, executa `database/01-schema.sql` e `database/02-seed.sql` em um serviço de inicialização e só então inicia a API. Os scripts são idempotentes e podem ser executados novamente sem duplicar os dados de exemplo. O health endpoint abre uma conexão real com o banco `JoyaPedidos` e retorna as contagens atuais de clientes e produtos. O SQL Server persiste dados no volume `sqlserver-data` e fica disponível na porta `1433`.
 
+## Bloco 3 — Configuração AI First e MCP
+
+- As regras do backend estão em [`CLAUDE.md`](CLAUDE.md); a skill de endpoint está em [`.claude/skills/new-endpoint/SKILL.md`](.claude/skills/new-endpoint/SKILL.md).
+- O hook `PostToolUse` executa `docker compose build backend` quando Claude edita um arquivo dentro de `backend/`. O build usa o SDK da imagem Docker; não exige SDK .NET instalado no host. O hook de typecheck do frontend continua configurado.
+- [`.mcp.json`](.mcp.json) registra o DBHub como MCP HTTP local em `http://localhost:8081/mcp`. O serviço é iniciado pelo Compose, e [`.claude/dbhub.toml`](.claude/dbhub.toml) limita a ferramenta `execute_sql` a consultas somente leitura.
+- O Compose passa a senha `SQL_SA_PASSWORD` de `.env` ao container DBHub; não coloque senhas no JSON, TOML ou Git. A porta MCP está vinculada somente a `127.0.0.1`. Aprove o servidor SQL Server no Claude Code e verifique seu estado com `/mcp` ou `claude mcp list`.
+
+Para testar o fluxo em uma sessão Claude Code autenticada, abra o projeto, aprove o MCP SQL Server e confirme a conexão com `/mcp`. Depois pergunte: “Quantos clientes existem? Consulte o SQL Server via MCP.” A consulta esperada é `SELECT COUNT(*) AS TotalClientes FROM dbo.Clientes` e, após a carga inicial, deve retornar `3`.
+
+**Uso do MCP nesta etapa:** Claude Code listou o servidor como conectado. A ferramenta MCP `execute_sql` executou a contagem de clientes e a contagem das quatro tabelas: 3 clientes, 4 produtos, 0 pedidos e 0 itens. A tentativa de pedir a resposta em linguagem natural via `claude -p` não foi concluída porque o Claude CLI não estava autenticado (`Not logged in`); portanto, não afirmamos que Claude Code respondeu à pergunta em linguagem natural nesta sessão.
+
 ## O que já está implementado
 
 - Tela de listagem de pedidos com filtro por cliente e período.

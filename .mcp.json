@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "sqlserver": {
+      "type": "http",
+      "url": "http://localhost:8081/mcp",
+      "timeout": 30000
+    }
+  }
+}
