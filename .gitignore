@@ -1,0 +1,21 @@
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+
+# .NET
+**/bin/
+**/obj/
+
+# Secrets and local config
+.env
+.env.*.local
+*.user
+*.suo
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
