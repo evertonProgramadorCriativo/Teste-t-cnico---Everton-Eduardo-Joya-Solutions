@@ -2,6 +2,31 @@
 
 Starter de frontend para o teste técnico Full Stack da Joya Solutions. O projeto foi organizado para entrar em um monorepositório com o backend .NET e o SQL Server.
 
+## Rotas utilizadas
+
+A API fica disponível diretamente em `http://localhost:8080`. Pelo frontend, as rotas abaixo são acessadas com o prefixo `http://localhost:3000/api`.
+
+| Método | Rota | Uso / resultado esperado |
+|---|---|---|
+| `GET` | `/health` | Confere a API e a conexão com o SQL Server. |
+| `GET` | `/clientes` | Carrega clientes para o formulário. |
+| `GET` | `/produtos` | Carrega produtos, preços e estoque. |
+| `GET` | `/pedidos?clienteId={id}&dataInicio=YYYY-MM-DD&dataFim=YYYY-MM-DD&pagina=1&tamanhoPagina=10` | Lista pedidos com filtros e paginação; filtros de cliente e período são opcionais. |
+| `GET` | `/pedidos/{id}` | Consulta um pedido pelo identificador. |
+| `POST` | `/pedidos` | Cria pedido; retorna `201`. Erros de validação, recurso inexistente e estoque retornam `400`, `404` e `409`. |
+| `GET` | `/relatorios/top-clientes?dataInicio=YYYY-MM-DD&dataFim=YYYY-MM-DD` | Retorna até cinco clientes, em ordem decrescente; datas são obrigatórias e inclusivas. |
+
+## Comandos de teste
+
+Execute na raiz do repositório. Os comandos usam o SDK .NET no container e não exigem SDK instalado no host.
+
+| Escopo | Comando | Observação |
+|---|---|---|
+| Testes unitários | `docker compose --profile test run --build --rm backend-tests --filter "FullyQualifiedName~PedidoCreationServiceTests"` | Usa SQLite em memória. |
+| Testes de integração | `docker compose --profile test run --build --rm backend-tests --filter "FullyQualifiedName~PedidoApiIntegrationTests"` | Inicia SQL Server temporário via Testcontainers; requer Docker e acesso ao socket. |
+| Suíte completa | `docker compose --profile test run --build --rm backend-tests` | Executa testes unitários e de integração. |
+| Build da API | `docker compose build backend` | Compila a imagem de produção da API. |
+
 ## Bloco 1 — API e SQL Server no Docker
 
 Requisitos: Docker Desktop com Docker Compose.
