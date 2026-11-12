@@ -1,4 +1,5 @@
 @baseUrl = http://localhost:8080
+@frontendBaseUrl = http://localhost:3000/api
 
 ### Health check
 GET {{baseUrl}}/health
@@ -8,6 +9,88 @@ GET {{baseUrl}}/clientes
 
 ### Listar produtos
 GET {{baseUrl}}/produtos
+
+### Clientes via proxy do frontend
+GET {{frontendBaseUrl}}/clientes
+
+### Produtos via proxy do frontend
+GET {{frontendBaseUrl}}/produtos
+
+### Listar pedidos
+GET {{baseUrl}}/pedidos?pagina=1&tamanhoPagina=10
+
+### Criar pedido (cliente e produto de exemplo)
+POST {{baseUrl}}/pedidos
+Content-Type: application/json
+
+{
+  "clienteId": 1,
+  "itens": [
+    { "produtoId": 1, "quantidade": 1 }
+  ]
+}
+
+### Criar pedido sem itens (esperado: 400)
+POST {{baseUrl}}/pedidos
+Content-Type: application/json
+
+{
+  "clienteId": 1,
+  "itens": []
+}
+
+### Criar pedido com quantidade inválida (esperado: 400)
+POST {{baseUrl}}/pedidos
+Content-Type: application/json
+
+{
+  "clienteId": 1,
+  "itens": [
+    { "produtoId": 1, "quantidade": 0 }
+  ]
+}
+
+### Criar pedido com cliente inexistente (esperado: 404)
+POST {{baseUrl}}/pedidos
+Content-Type: application/json
+
+{
+  "clienteId": 999999,
+  "itens": [
+    { "produtoId": 1, "quantidade": 1 }
+  ]
+}
+
+### Criar pedido com estoque insuficiente (esperado: 409)
+POST {{baseUrl}}/pedidos
+Content-Type: application/json
+
+{
+  "clienteId": 1,
+  "itens": [
+    { "produtoId": 1, "quantidade": 2147483647 }
+  ]
+}
+
+### Consultar pedido por ID (ajuste o ID conforme a resposta do POST)
+GET {{baseUrl}}/pedidos/1
+
+### Criar pedido via proxy do frontend
+POST {{frontendBaseUrl}}/pedidos
+Content-Type: application/json
+
+{
+  "clienteId": 1,
+  "itens": [
+    { "produtoId": 1, "quantidade": 1 }
+  ]
+}
+
+### Filtrar pedidos por cliente e período
+GET {{baseUrl}}/pedidos?clienteId=1&dataInicio=2026-01-01&dataFim=2026-12-31&pagina=1&tamanhoPagina=10
+
+### Listar pedidos via proxy do frontend
+GET {{frontendBaseUrl}}/pedidos?pagina=1&tamanhoPagina=10
 
 ### Rota inexistente — deve retornar 404 ProblemDetails
 GET {{baseUrl}}/rota-inexistente

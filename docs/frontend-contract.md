@@ -33,7 +33,7 @@ Resposta `200 OK`:
       "id": 42,
       "clienteId": 7,
       "clienteNome": "Maria Santos",
-      "dataPedido": "2026-11-12T10:30:00",
+      "dataPedido": "2026-11-12T10:30:00Z",
       "quantidadeItens": 3,
       "valorTotal": 1250.50
     }
@@ -61,12 +61,12 @@ Request `application/json`:
 }
 ```
 
-Resposta recomendada `201 Created`:
+Resposta `201 Created` com `Location: /pedidos/{id}`:
 
 ```json
 {
   "id": 43,
-  "dataPedido": "2026-11-12T11:15:00",
+  "dataPedido": "2026-11-12T11:15:00Z",
   "valorTotal": 875.00
 }
 ```
@@ -79,10 +79,17 @@ Regras de backend obrigatórias:
 - Produtos devem existir e ter estoque suficiente.
 - O backend busca o preço atual no banco, calcula os subtotais e o total e atualiza o estoque dentro de uma transação.
 - Não confiar em total, preço ou estoque informado pelo browser.
+- Quantidades repetidas do mesmo produto são somadas antes da validação de estoque.
 
-Erros de validação devem retornar `400 Bad Request` ou `422 Unprocessable Entity` com mensagem compreensível. Conflito de estoque pode retornar `409 Conflict`.
+Erros usam `ProblemDetails`: pedido sem itens ou quantidade inválida retorna `400 Bad Request`; cliente ou produto inexistente retorna `404 Not Found`; estoque insuficiente retorna `409 Conflict`. A baixa de estoque, o pedido e seus itens são confirmados ou revertidos juntos.
 
-## 3. GET /clientes — endpoint adicional necessário ao formulário
+## 3. GET /pedidos/{id}
+
+Retorna o pedido criado, e é o destino do cabeçalho `Location` do POST.
+
+Resposta `200 OK`: usa os mesmos campos de um item de `GET /pedidos`. Pedido inexistente retorna `404 Not Found`.
+
+## 4. GET /clientes — endpoint adicional necessário ao formulário
 
 O desafio não lista este endpoint, mas o formulário precisa de clientes cadastrados para preencher o select.
 
@@ -97,7 +104,7 @@ Resposta `200 OK`:
 
 Retornar apenas clientes disponíveis para novos pedidos, caso exista regra de ativo/inativo. Se o backend optar por paginação, adapte `lookupsApi.ts` ou mantenha esse endpoint simples para o escopo do teste.
 
-## 4. GET /produtos — endpoint adicional necessário ao formulário
+## 5. GET /produtos — endpoint adicional necessário ao formulário
 
 O desafio não lista este endpoint, mas o formulário precisa consultar preço e estoque antes da inclusão dos itens.
 
@@ -122,7 +129,7 @@ Resposta `200 OK`:
 
 O campo `estoqueDisponivel` é informativo para a interface. O backend precisa validar novamente no POST para evitar condição de corrida.
 
-## 5. GET /relatorios/top-clientes
+## 6. GET /relatorios/top-clientes
 
 Query string:
 

@@ -11,6 +11,8 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 builder.Services.AddDbContext<PedidosDbContext>(options => options.UseSqlServer(connectionString));
 builder.Services.AddScoped<ILookupService, LookupService>();
+builder.Services.AddScoped<IPedidoCreationService, PedidoCreationService>();
+builder.Services.AddScoped<IPedidoQueryService, PedidoQueryService>();
 builder.Services.AddProblemDetails();
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
@@ -55,6 +57,7 @@ app.MapGet("/health", async (CancellationToken cancellationToken, ILogger<Progra
 
 app.MapClients();
 app.MapProducts();
+app.MapOrders();
 
 app.Run();
 

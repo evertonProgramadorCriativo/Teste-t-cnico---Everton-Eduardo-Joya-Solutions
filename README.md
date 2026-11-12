@@ -58,6 +58,34 @@ Para testar o fluxo em uma sessão Claude Code autenticada, abra o projeto, apro
 
 No Postman, envie `GET http://localhost:8080/clientes` e `GET http://localhost:8080/produtos`; ambas devem responder `200 OK`, com 3 clientes e 4 produtos após a carga inicial. Para conferir o tratamento de rota inexistente, envie `GET http://localhost:8080/rota-inexistente`; o esperado é `404 Not Found`, `Content-Type: application/problem+json` e um corpo ProblemDetails.
 
+## Bloco 5 — Frontend no Docker
+
+O serviço `frontend` publica o Nginx na porta `3000` e encaminha `/api/*` para o serviço `backend:8080`. Suba o projeto inteiro na raiz:
+
+```bash
+docker compose up --build
+```
+
+Abra `http://localhost:3000`, clique em **Novo pedido** e confira se os selects de cliente e produto são preenchidos. No Postman, valide também o proxy:
+
+- `GET http://localhost:3000/api/clientes` — `200 OK`, lista de clientes.
+- `GET http://localhost:3000/api/produtos` — `200 OK`, produtos com `precoUnitario` e `estoqueDisponivel`.
+
+`GET /pedidos` retorna uma página vazia até que existam pedidos. O `POST /pedidos` cria pedidos calculando preços no backend e baixando o estoque em uma transação. O relatório de top clientes ainda será implementado.
+
+Para criar um pedido pelo Postman, envie `POST http://localhost:3000/api/pedidos` com `Content-Type: application/json`:
+
+```json
+{
+  "clienteId": 1,
+  "itens": [
+    { "produtoId": 1, "quantidade": 1 }
+  ]
+}
+```
+
+Uma criação válida retorna `201 Created`; consulte os exemplos de sucesso e validação em [`requests.http`](requests.http). O backend retorna `400` para itens ou quantidades inválidas, `404` para cliente/produto inexistente e `409` para estoque insuficiente. Atualize os dados da tela após salvar para conferir o pedido na listagem.
+
 ## O que já está implementado
 
 - Tela de listagem de pedidos com filtro por cliente e período.
@@ -105,22 +133,7 @@ npm run preview
 
 O `frontend/Dockerfile` compila a aplicação e publica os arquivos por Nginx. O Nginx encaminha `/api/*` para `http://backend:8080/*`.
 
-No `docker-compose.yml` da raiz do monorepositório, mantenha o nome do serviço .NET como `backend` e a porta interna da API como `8080`, ou ajuste o destino em `frontend/nginx.conf`.
-
-Exemplo de serviço para adicionar ao Compose da raiz:
-
-```yaml
-frontend:
-  build:
-    context: ./frontend
-    dockerfile: Dockerfile
-  ports:
-    - "3000:80"
-  depends_on:
-    - backend
-```
-
-Depois de integrar o backend e o SQL Server, a aplicação poderá ser iniciada pela raiz com `docker compose up --build`.
+O `docker-compose.yml` da raiz sobe SQL Server, inicialização do banco, DBHub, backend e frontend com `docker compose up --build`. A interface fica disponível em `http://localhost:3000` e a API em `http://localhost:8080`.
 
 ## Contrato da API
 

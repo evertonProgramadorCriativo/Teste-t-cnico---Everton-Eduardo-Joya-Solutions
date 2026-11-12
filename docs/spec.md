@@ -89,6 +89,7 @@ Todos os JSON usam camelCase. Datas de filtro no formato `YYYY-MM-DD`. Erros seg
 | Método e rota | Descrição | Sucesso |
 |---|---|---|
 | `POST /pedidos` | Cria pedido com itens. | 201 `{ id, dataPedido, valorTotal }` |
+| `GET /pedidos/{id}` | Consulta o pedido criado pelo identificador; destino do `Location` do POST. | 200 item de pedido |
 | `GET /pedidos` | Lista com filtros `clienteId`, `dataInicio`, `dataFim` e paginação `pagina`, `tamanhoPagina`. | 200 `{ items, pagina, tamanhoPagina, totalRegistros, totalPaginas }` |
 | `GET /relatorios/top-clientes` | Top 5 por valor total no período (`dataInicio` e `dataFim` obrigatórios). | 200 lista de até 5 itens |
 | `GET /clientes` | Apoio ao formulário. | 200 `[{ id, nome }]` |
@@ -129,6 +130,7 @@ Todos os JSON usam camelCase. Datas de filtro no formato `YYYY-MM-DD`. Erros seg
 | CA-14 | Testes unitários e de integração (SQL Server real) passam com `dotnet test`. |
 | CA-15 | O README explica decisões, execução, testes, uso do Claude Code e o debug da query. |
 | CA-16 | `GET /health` confirma a conexão e retorna as quantidades de clientes e produtos carregados pelos scripts do banco. |
+| CA-17 | `POST /pedidos` retorna `Location` válido para `GET /pedidos/{id}`. |
 
 ## 8. Pontos ainda sujeitos a decisão
 
