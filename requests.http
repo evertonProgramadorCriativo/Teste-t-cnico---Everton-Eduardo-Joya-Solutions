@@ -61,6 +61,17 @@ Content-Type: application/json
   ]
 }
 
+### Criar pedido com produto inexistente (esperado: 404)
+POST {{baseUrl}}/pedidos
+Content-Type: application/json
+
+{
+  "clienteId": 1,
+  "itens": [
+    { "produtoId": 2147483647, "quantidade": 1 }
+  ]
+}
+
 ### Criar pedido com estoque insuficiente (esperado: 409)
 POST {{baseUrl}}/pedidos
 Content-Type: application/json
@@ -100,6 +111,18 @@ GET {{baseUrl}}/pedidos?pagina=2&tamanhoPagina=1
 
 ### Consultar sem resultados (cliente 3)
 GET {{baseUrl}}/pedidos?clienteId=3&pagina=1&tamanhoPagina=10
+
+### Top clientes no período com pedidos
+GET {{baseUrl}}/relatorios/top-clientes?dataInicio=2026-11-12&dataFim=2026-11-12
+
+### Top clientes com dataFim inclusiva
+GET {{baseUrl}}/relatorios/top-clientes?dataInicio=2026-01-01&dataFim=2026-11-12
+
+### Top clientes em período vazio
+GET {{baseUrl}}/relatorios/top-clientes?dataInicio=2025-01-01&dataFim=2025-12-31
+
+### Top clientes via proxy do frontend
+GET {{frontendBaseUrl}}/relatorios/top-clientes?dataInicio=2026-01-01&dataFim=2026-11-12
 
 ### Listar pedidos via proxy do frontend
 GET {{frontendBaseUrl}}/pedidos?pagina=1&tamanhoPagina=10

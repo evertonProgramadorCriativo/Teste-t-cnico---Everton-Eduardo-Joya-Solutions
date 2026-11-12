@@ -71,7 +71,7 @@ Abra `http://localhost:3000`, clique em **Novo pedido** e confira se os selects 
 - `GET http://localhost:3000/api/clientes` — `200 OK`, lista de clientes.
 - `GET http://localhost:3000/api/produtos` — `200 OK`, produtos com `precoUnitario` e `estoqueDisponivel`.
 
-`GET /pedidos` retorna uma página vazia até que existam pedidos. O `POST /pedidos` cria pedidos calculando preços no backend e baixando o estoque em uma transação. O relatório de top clientes ainda será implementado.
+`GET /pedidos` retorna uma página vazia até que existam pedidos. O `POST /pedidos` cria pedidos calculando preços no backend e baixando o estoque em uma transação.
 
 Para criar um pedido pelo Postman, envie `POST http://localhost:3000/api/pedidos` com `Content-Type: application/json`:
 
@@ -91,6 +91,68 @@ Uma criação válida retorna `201 Created`; consulte os exemplos de sucesso e v
 `GET /pedidos` aceita os filtros opcionais `clienteId`, `dataInicio` e `dataFim`, além de `pagina` (a partir de 1) e `tamanhoPagina` (de 1 a 50). O período inclui as datas inicial e final. A resposta segue o contrato `{ items, pagina, tamanhoPagina, totalRegistros, totalPaginas }`; quando não há resultados, `items` é vazio e `totalPaginas` é zero.
 
 No Postman, use `http://localhost:8080/pedidos` para testar sem filtro, por cliente, por período, página 2 e um filtro sem resultados. Também é possível validar o proxy em `http://localhost:3000/api/pedidos`. Exemplos estão em [`requests.http`](requests.http). Na tela em `http://localhost:3000`, a tabela exibe a página atual e os filtros de cliente e período; os controles de paginação ficam desabilitados quando só há uma página.
+
+## Bloco 7 — Criação de pedidos
+
+`POST /pedidos` recebe `clienteId` e itens com `produtoId` e `quantidade`. O backend valida cliente, itens, produtos e estoque, calcula o preço com os valores do banco e persiste o pedido, os itens e a baixa do estoque na mesma transação. Uma resposta válida é `201 Created`; os erros esperados são `400`, `404` ou `409`, em formato `ProblemDetails`.
+
+No Postman, execute os seis exemplos de criação em [`requests.http`](requests.http): sucesso, cliente inexistente, sem itens, quantidade zero, produto inexistente e estoque insuficiente. Após o sucesso, use `GET /produtos` para confirmar a redução do estoque e `GET /pedidos` para localizar o pedido. A validação do modal pode impedir quantidades acima do estoque antes de chamar a API; para testar o `409` do backend, envie diretamente o caso de estoque insuficiente pelo Postman.
+
+## Bloco 8 — Top clientes e debug da query
+
+`GET /relatorios/top-clientes?dataInicio=YYYY-MM-DD&dataFim=YYYY-MM-DD` retorna até cinco clientes, ordenados pelo total comprado em ordem decrescente. O intervalo inclui `dataFim`, convertida no backend para o limite exclusivo do dia seguinte. O painel usa essa rota pelo proxy `/api`.
+
+O benchmark reproduzível em `database/03-query-benchmark.sql` cria 1.000 clientes (50 sem pedidos), 34.200 pedidos e 68.400 itens temporários dentro de uma transação. Execute-o em ambiente local sem outros escritores concorrentes; ao final, os dados são revertidos e as identidades voltam ao maior ID persistido. Para capturar planos reais e `STATISTICS IO` no SQL Server do Compose:
+
+```powershell
+docker compose run --rm --no-deps --entrypoint /bin/bash database-init -lc '/opt/mssql-tools18/bin/sqlcmd -S sqlserver,1433 -U sa -P "$MSSQL_SA_PASSWORD" -d JoyaPedidos -C -b -i /scripts/03-query-benchmark.sql -y 0 -Y 0'
+```
+
+O script imprime o plano de execução real e as leituras lógicas antes (query original) e depois (query corrigida). Resultados observados em uma execução local:
+
+**Antes:**
+
+```sql
+SELECT c.Nome, SUM(i.Quantidade * i.PrecoUnitario) AS Total
+FROM Clientes c
+LEFT JOIN Pedidos p ON p.ClienteId = c.Id
+LEFT JOIN ItensPedido i ON i.PedidoId = p.Id
+WHERE YEAR(p.DataPedido) = 2026
+GROUP BY c.Nome
+ORDER BY Total;
+```
+
+**Depois:**
+
+```sql
+SELECT TOP (5)
+    c.Id AS ClienteId,
+    c.Nome AS ClienteNome,
+    SUM(p.ValorTotal) AS TotalComprado,
+    COUNT(p.Id) AS QuantidadePedidos
+FROM dbo.Pedidos AS p
+INNER JOIN dbo.Clientes AS c ON c.Id = p.ClienteId
+WHERE p.DataPedido >= @DataInicio
+  AND p.DataPedido < @DataFimExclusivo
+GROUP BY c.Id, c.Nome
+ORDER BY TotalComprado DESC, c.Id ASC;
+```
+
+| Métrica | Antes | Depois |
+|---|---:|---:|
+| Leituras lógicas — `Pedidos` | 95 | 48 |
+| Leituras lógicas — `Clientes` | 16 | 10 |
+| Leituras lógicas — `ItensPedido` | 290 | 0 |
+| Leituras lógicas — `Worktable` | 0 | 0 |
+| Total de leituras lógicas | 401 | 58 |
+| CPU da execução | 97 ms | 8 ms |
+| Tempo decorrido da execução | 93 ms | 9 ms |
+
+O plano anterior fez `Index Scan` em `IX_Pedidos_ClienteId_DataPedido` e leituras em `ItensPedido`. O plano corrigido fez `Index Seek` em `IX_Pedidos_DataPedido`, seguido de `Clustered Index Seek` em `PK_Clientes`, sem acessar `ItensPedido`. O índice por data já existia desde o Bloco 2 e cobre `ClienteId` e `ValorTotal`.
+
+Correções aplicadas: o `WHERE YEAR(p.DataPedido) = 2026` tornava o filtro não sargable; foi substituído por limites `>= @dataInicio` e `< @dataFimExclusivo`. O filtro no lado nullable do `LEFT JOIN` eliminava as linhas sem pedido, comportando-se como `INNER JOIN`; a consulta agora usa `INNER JOIN` explícito, apropriado para um ranking de quem comprou. A ordenação implícita era crescente e não havia limite; agora usa `TOP (5)` e `DESC`. Agrupar somente pelo nome juntava homônimos; agora o agrupamento inclui `ClienteId`.
+
+Além disso, a consulta do relatório soma `Pedidos.ValorTotal`, gravado pelo backend na mesma transação que os itens, evitando a junção e leitura de `ItensPedido`. Os totais do benchmark são gerados a partir dos mesmos preços e quantidades dos itens. Os tempos variam conforme cache e ambiente; nesta execução as leituras físicas foram zero, então use os números como evidência local, não como garantia de produção.
 
 ## O que já está implementado
 

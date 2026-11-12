@@ -13,6 +13,7 @@ builder.Services.AddDbContext<PedidosDbContext>(options => options.UseSqlServer(
 builder.Services.AddScoped<ILookupService, LookupService>();
 builder.Services.AddScoped<IPedidoCreationService, PedidoCreationService>();
 builder.Services.AddScoped<IPedidoQueryService, PedidoQueryService>();
+builder.Services.AddScoped<IRelatorioService, RelatorioService>();
 builder.Services.AddProblemDetails();
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
@@ -58,6 +59,7 @@ app.MapGet("/health", async (CancellationToken cancellationToken, ILogger<Progra
 app.MapClients();
 app.MapProducts();
 app.MapOrders();
+app.MapReports();
 
 app.Run();
 

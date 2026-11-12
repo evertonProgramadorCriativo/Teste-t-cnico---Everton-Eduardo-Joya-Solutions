@@ -151,7 +151,7 @@ Resposta `200 OK` (máximo de cinco registros):
 ]
 ```
 
-O backend deve ordenar por `totalComprado` em ordem decrescente. O período deve ser aplicado sem usar `YEAR(DataPedido)` sobre a coluna, para permitir o uso do índice por data.
+O backend deve ordenar por `totalComprado` em ordem decrescente e agrupar por `ClienteId` e nome, sem combinar clientes homônimos. `dataInicio` e `dataFim` são inclusivas; aplique o filtro como `DataPedido >= dataInicio AND DataPedido < dataFim + 1 dia`, sem usar função sobre a coluna, para permitir o uso do índice por data. Sem pedidos no período, retorne `200 OK` com uma lista vazia.
 
 ## Mapeamento no código React
 
