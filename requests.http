@@ -89,6 +89,18 @@ Content-Type: application/json
 ### Filtrar pedidos por cliente e período
 GET {{baseUrl}}/pedidos?clienteId=1&dataInicio=2026-01-01&dataFim=2026-12-31&pagina=1&tamanhoPagina=10
 
+### Filtrar por cliente
+GET {{baseUrl}}/pedidos?clienteId=1&pagina=1&tamanhoPagina=10
+
+### Filtrar por período inclusivo
+GET {{baseUrl}}/pedidos?dataInicio=2026-11-12&dataFim=2026-11-12&pagina=1&tamanhoPagina=10
+
+### Consultar a página 2
+GET {{baseUrl}}/pedidos?pagina=2&tamanhoPagina=1
+
+### Consultar sem resultados (cliente 3)
+GET {{baseUrl}}/pedidos?clienteId=3&pagina=1&tamanhoPagina=10
+
 ### Listar pedidos via proxy do frontend
 GET {{frontendBaseUrl}}/pedidos?pagina=1&tamanhoPagina=10
 

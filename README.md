@@ -86,6 +86,12 @@ Para criar um pedido pelo Postman, envie `POST http://localhost:3000/api/pedidos
 
 Uma criação válida retorna `201 Created`; consulte os exemplos de sucesso e validação em [`requests.http`](requests.http). O backend retorna `400` para itens ou quantidades inválidas, `404` para cliente/produto inexistente e `409` para estoque insuficiente. Atualize os dados da tela após salvar para conferir o pedido na listagem.
 
+## Bloco 6 — Listagem de pedidos
+
+`GET /pedidos` aceita os filtros opcionais `clienteId`, `dataInicio` e `dataFim`, além de `pagina` (a partir de 1) e `tamanhoPagina` (de 1 a 50). O período inclui as datas inicial e final. A resposta segue o contrato `{ items, pagina, tamanhoPagina, totalRegistros, totalPaginas }`; quando não há resultados, `items` é vazio e `totalPaginas` é zero.
+
+No Postman, use `http://localhost:8080/pedidos` para testar sem filtro, por cliente, por período, página 2 e um filtro sem resultados. Também é possível validar o proxy em `http://localhost:3000/api/pedidos`. Exemplos estão em [`requests.http`](requests.http). Na tela em `http://localhost:3000`, a tabela exibe a página atual e os filtros de cliente e período; os controles de paginação ficam desabilitados quando só há uma página.
+
 ## O que já está implementado
 
 - Tela de listagem de pedidos com filtro por cliente e período.
